@@ -136,4 +136,4 @@ select = [
 
 ignore = [
     "E501", # line too long
-   
+]
