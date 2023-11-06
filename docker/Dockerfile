@@ -1,3 +1,4 @@
+# Etapa de construcción
 FROM python:3.10.10-slim-bullseye as builder
 
 WORKDIR /app
@@ -9,16 +10,18 @@ RUN apt-get update -qq \
   && apt-get clean \
   && rm -rf /var/lib/apt
 
-RUN python -mvenv venv && ./venv/bin/pip install --no-cache-dir --upgrade pip
+RUN python -m venv venv && ./venv/bin/pip install --no-cache-dir --upgrade pip
 
 COPY . .
 
-# Install package from source code, compile translations
+# Instala paquetes desde el código fuente y compila traducciones
 RUN ./venv/bin/pip install Babel==2.12.1 && ./venv/bin/python scripts/compile_locales.py \
   && ./venv/bin/pip install torch==2.0.1 --extra-index-url https://download.pytorch.org/whl/cpu \
+  && ./venv/bin/pip install argostranslatefiles \
   && ./venv/bin/pip install . \
   && ./venv/bin/pip cache purge
 
+# Etapa de producción
 FROM python:3.10.10-slim-bullseye
 
 ARG with_models=false
@@ -31,7 +34,7 @@ COPY --from=builder --chown=1032:1032 /app /app
 WORKDIR /app
 
 RUN if [ "$with_models" = "true" ]; then  \
-  # initialize the language models
+  # Inicializa los modelos de lenguaje
   if [ ! -z "$models" ]; then \
   ./venv/bin/python scripts/install_models.py --load_only_lang_codes "$models";   \
   else \
