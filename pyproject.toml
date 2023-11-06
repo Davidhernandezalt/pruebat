@@ -16,20 +16,23 @@ maintainers = [
     { name = "Piero Toffanin", email = "pt@uav4geo.com" },
     { name = "LibreTranslate Authors" },
 ]
-
+keywords = [
+    "Python",
+    "Translate",
+    "Translation",
+    "API",
+]
 classifiers = [
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.10"
 ]
 dynamic = ["version"]
 
 dependencies = [
-    "regex == 2023.10.3",
     "argostranslate ==1.9.1",
     "Flask ==2.2.2",
     "flask-swagger ==0.2.14",
@@ -44,7 +47,7 @@ dependencies = [
     "morfessor ==2.0.6",
     "appdirs ==1.4.4",
     "APScheduler ==3.9.1",
-    "translatehtml ==1.5.0",
+    "translatehtml ==1.5.2",
     "argos-translate-files ==1.1.4",
     "itsdangerous ==2.1.2",
     "Werkzeug ==2.2.2",
@@ -59,6 +62,7 @@ dependencies = [
 libretranslate = "libretranslate.main:main"
 ltmanage = "libretranslate.manage:manage"
 
+
 [project.optional-dependencies]
 test = [
     "pytest >=7.2.0",
@@ -67,6 +71,7 @@ test = [
     "types-requests",
 ]
 
+
 [project.urls]
 Homepage = "https://libretranslate.com"
 Source = "https://github.com/LibreTranslate/LibreTranslate"
@@ -74,10 +79,8 @@ Documentation = "https://github.com/LibreTranslate/LibreTranslate"
 Tracker = "https://github.com/LibreTranslate/LibreTranslate/issues"
 History = "https://github.com/LibreTranslate/LibreTranslate/releases"
 
-[tool.hatch.version]
-path = "/VERSION.txt"
-pattern = "^(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)$"
 
+# ENVIRONMENTS AND SCRIPTS
 [tool.hatch.envs.default]
 features = [
     "test",
@@ -85,6 +88,7 @@ features = [
 post-install-commands = [
     "pre-commit install",
 ]
+
 
 [tool.hatch.envs.default.scripts]
 dev = "python main.py {args}"
@@ -102,8 +106,16 @@ cov = [
     "python -m http.server 3000 --directory ./htmlcov",
 ]
 
+
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
+
+
+# TOOLS
+[tool.hatch.version]
+path = "VERSION"
+pattern = "^(?P<version>[0-9]*.[0-9]*.[0-9]*)$"
+
 
 [tool.pytest.ini_options]
 addopts = [
@@ -113,6 +125,8 @@ addopts = [
     "--cov-report=term-missing",
 ]
 
+
+# https://beta.ruff.rs/docs/rules
 [tool.ruff]
 src = ["libretranslate", "scripts"]
 target-version = "py38"
@@ -124,12 +138,35 @@ select = [
     "A",     # flake8-builtins
     "YTT",   # flake8-2020
     "B",     # flake8-bugbear
+    # "C",     # flake8-comprehensions
     "ICN",   # flake8-import-conventions
+    # "SIM",   # flake8-simplify
     "TID",   # flake8-tidy-imports
+    # "Q",     # flake8-quotes
+    # "FBT",   # flake8-boolean-trap
     "F",     # pyflakes
     "UP",    # pyupgrade
+    # "E",     # pycodestyle errors
+    # "W",     # pycodestyle warnings
+    # "PLC",   # pylint convention
+    "PLE",   # pylint error
+    # "PLR",   # pylint refactor
+    # "PLW",   # pylint warning
+    # "RUF",   # ruff specific
 ]
 
 ignore = [
     "E501", # line too long
+    "A003", # Class attribute is shadowing a python builtin
+    "S101", # Use of `assert` detected
+    "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "T201", "T203", # remove print and pprint
+    "E402", # Module level import not at top of file
 ]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["I", "F401"] # module imported but unused
+
+
+[tool.ruff.mccabe]
+max-complexity = 12
