@@ -1,6 +1,11 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+numReplicas = 1
+sleepApplication = false
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
 
 [project]
 requires-python = ">=3.8"
@@ -77,11 +82,60 @@ Documentation = "https://github.com/LibreTranslate/LibreTranslate"
 Tracker = "https://github.com/LibreTranslate/LibreTranslate/issues"
 History = "https://github.com/LibreTranslate/LibreTranslate/releases"
 
-[build]
-builder = "NIXPACKS"
+# ENVIRONMENTS AND SCRIPTS
+[tool.hatch.envs.default]
+features = [
+    "test",
+]
+post-install-commands = [
+    "pre-commit install",
+]
 
-[deploy]
-numReplicas = 1
-sleepApplication = false
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
+[tool.hatch.envs.default.scripts]
+dev = "python main.py {args}"
+locales = "python scripts/compile_locales.py"
+fmt = [
+    "pre-commit run --all --all-files",
+]
+test = [
+    "fmt",
+    "pytest {args}",
+]
+cov = [
+    "pytest --cov-report html {args}",
+    "python -c 'import webbrowser; webbrowser.open(\"http://0.0.0.0:3000\")'",
+    "python -m http.server 3000 --directory ./htmlcov",
+]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11"]
+
+# TOOLS
+[tool.hatch.version]
+path = "VERSION"
+pattern = "^(?P<version>[0.9]*.[0.9]*.[0.9]*)"
+
+[tool.pytest.ini_options]
+addopts = [
+    "-v",
+    "--cov=libretranslate",
+    "--color=yes",
+    "--cov-report=term-missing",
+]
+
+# https://beta.ruff.rs/docs/rules
+[tool.ruff]
+src = ["libretranslate", "scripts"]
+target-version = "py38"
+line-length = 136
+select = [
+    "I",     # isort
+    "N",     # pep8-naming
+    "S",     # bandit
+    "A",     # flake8-builtins
+    "YTT",   # flake8-2020
+    "B",     # flake8-bugbear
+    "ICN",   # flake8-import-conventions
+    "TID",   # flake8-tidy-imports
+    "F",     # pyflakes
+    "UP",
